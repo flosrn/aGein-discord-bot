@@ -10,12 +10,20 @@ function getFiles(dir) {
   return readdirSync(dir).reduce((files, file) => {
     const name = join(dir, file);
     const isDirectory = statSync(name).isDirectory();
-    return isDirectory ? [files, ...getFiles(name)] : [files, name];
+    if (isDirectory) {
+      return files.concat(getFiles(name));
+    }
+    return files.concat(name);
   }, []);
 }
 
 const inputs = getFiles('src')
-  .filter((file) => file.endsWith('.ts') && !file.endsWith('.d.ts'))
+  .filter(
+    (file) =>
+      typeof file === 'string' &&
+      file.endsWith('.ts') &&
+      !file.endsWith('.d.ts')
+  )
   .reduce((acc, file) => {
     const name = relative('src', file).replace('.ts', '');
     acc[name] = file;
