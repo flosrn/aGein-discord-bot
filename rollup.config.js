@@ -45,8 +45,8 @@ export default {
   plugins: [
     del({ targets: 'dist/*' }),
     resolve({ preferBuiltins: true }),
-    commonjs(),
     json(),
+    commonjs(),
     typescript({
       sourceMap: false,
       tsconfig: './tsconfig.json',
