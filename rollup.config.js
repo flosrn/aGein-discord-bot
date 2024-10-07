@@ -1,5 +1,6 @@
 import { del } from '@kineticcafe/rollup-plugin-delete';
 import commonjs from '@rollup/plugin-commonjs';
+import json from '@rollup/plugin-json';
 import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import copy from 'rollup-plugin-copy';
@@ -45,6 +46,7 @@ export default {
     del({ targets: 'dist/*' }),
     resolve({ preferBuiltins: true }),
     commonjs(),
+    json(),
     typescript({
       sourceMap: false,
       tsconfig: './tsconfig.json',
