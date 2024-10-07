@@ -1,8 +1,6 @@
 import '@/env';
 import { Client, Collection, GatewayIntentBits } from 'discord.js';
 
-import { existsSync } from 'node:fs';
-
 import { type Button, register as registerButtons } from '@/lib/buttons';
 import { type Command, register as registerCommands } from '@/lib/commands';
 import { register as registerEvents } from '@/lib/events';
@@ -34,15 +32,15 @@ client.selections = new Collection();
 global.client = client;
 
 async function main() {
-  if (existsSync('./config.json') || existsSync('../config.json')) {
-    const file = await import('../config.json', {
-      assert: {
-        type: 'json'
-      }
-    });
+  // if (existsSync('./config.json') || existsSync('../config.json')) {
+  //   const file = await import('../config.json', {
+  //     assert: {
+  //       type: 'json'
+  //     }
+  //   });
 
-    global.config = 'default' in file ? file.default : file;
-  }
+  //   global.config = 'default' in file ? file.default : file;
+  // }
 
   await registerEvents();
   await registerCommands();
