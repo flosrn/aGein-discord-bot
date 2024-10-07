@@ -39,6 +39,7 @@ export default {
     preserveModules: true,
     preserveModulesRoot: 'src',
     sourcemap: false,
+    entryFileNames: '[name].mjs',
   },
   plugins: [
     del({ targets: 'dist/*' }),
