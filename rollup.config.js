@@ -2,6 +2,7 @@ import { del } from '@kineticcafe/rollup-plugin-delete';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
+import copy from 'rollup-plugin-copy';
 
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -48,6 +49,11 @@ export default {
       tsconfig: './tsconfig.json',
       outputToFilesystem: true,
       noEmitOnError: false
+    }),
+    copy({
+      targets: [
+        { src: 'src/config.json', dest: 'dist' } // Copie config.json vers dist
+      ]
     })
   ],
   external: ['discord.js', 'dotenv', 'zod', 'node:*', /.*\.json$/]
