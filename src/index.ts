@@ -1,17 +1,14 @@
 import '@/env';
+import { InteractionResponseType, InteractionType } from 'discord-interactions';
 import {
-  InteractionResponseType,
-  InteractionType,
-  verifyKeyMiddleware,
-} from 'discord-interactions';
-import {
+  type APIApplicationCommandInteraction,
   Client,
   Collection,
   GatewayIntentBits,
   REST,
   Routes,
 } from 'discord.js';
-import express, { type Request, type Response } from 'express';
+import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify';
 
 import { type Button, register as registerButtons } from '@/lib/buttons';
 import { type Command, register as registerCommands } from '@/lib/commands';
@@ -59,37 +56,61 @@ async function main() {
     process.exit(1);
   }
 
-  // Créer un serveur Express pour les interactions Discord
-  const app = express();
+  // Créer un serveur Fastify pour les interactions Discord
+  const fastify = Fastify();
   const PORT = process.env.PORT || 3000;
 
-  const rest = new REST({ version: '10' }).setToken(global.env.CLIENT_TOKEN);
+  const rest = new REST({ version: '14' }).setToken(global.env.CLIENT_TOKEN);
 
   // Point de terminaison pour la route racine
-  app.get('/', (_: Request, res: Response) => {
-    res.send(
+  fastify.get('/', async (_: FastifyRequest, reply: FastifyReply) => {
+    reply.send(
       'Le serveur est opérationnel et prêt à recevoir des interactions.',
     );
   });
 
   // Middleware pour vérifier la clé de signature des requêtes Discord
-  app.post(
-    '/interactions',
-    express.raw({ type: 'application/json' }),
-    verifyKeyMiddleware(global.env.PUBLIC_KEY),
-    async (req: Request, res: Response) => {
-      const interaction = req.body;
+  fastify.post('/interactions', {
+    // preHandler: (request: FastifyRequest, reply: FastifyReply) => {
+    //   const rawBody = request.body;
+    //   if (!rawBody) {
+    //     reply.status(400).send('Bad Request: Missing raw body');
+    //     return;
+    //   }
+    //   verifyKeyMiddleware(global.env.PUBLIC_KEY)(rawBody, rawBody, reply.raw);
+    // },
+    handler: async (request: FastifyRequest, reply: FastifyReply) => {
+      const interaction = request.body as {
+        type?: unknown;
+        id?: string;
+        token?: string;
+      };
 
-      // if (interaction.type === InteractionType.PING) {
-      //   // Répondre à la vérification PING
-      //   return res.send({
-      //     type: InteractionResponseType.PONG,
-      //   });
-      // }
+      if (
+        typeof interaction?.type === 'undefined' ||
+        typeof interaction?.id === 'undefined'
+      ) {
+        reply.status(400).send('Bad Request: Missing interaction type');
+        return;
+      }
 
-      // Gérer d'autres types d'interactions (commandes slash, boutons, etc.)
+      if (typeof interaction?.id === 'undefined') {
+        reply.status(400).send('Bad Request: Missing interaction type');
+        return;
+      }
+
+      if (typeof interaction?.token === 'undefined') {
+        reply.status(400).send('Bad Request: Missing interaction type');
+        return;
+      }
+
+      // Gérer les différents types d'interactions
       if (interaction.type === InteractionType.APPLICATION_COMMAND) {
-        const command = global.client.commands.get(interaction.data.name);
+        const commandInteraction =
+          interaction as APIApplicationCommandInteraction;
+        const command = global.client.commands.get(
+          commandInteraction.data.name,
+        );
         if (command) {
           try {
             await rest.post(
@@ -98,40 +119,52 @@ async function main() {
                 body: {
                   type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                   data: {
-                    content: `Commande ${interaction.data.name} exécutée avec succès.`,
+                    content: `Commande ${commandInteraction.data.name} exécutée avec succès.`,
                   },
                 },
               },
             );
-            res.status(200).send("Réponse à l'interaction");
+            reply.status(200).send("Réponse à l'interaction");
           } catch (error) {
             console.error("Erreur lors de l'exécution de la commande :", error);
-            res.send({
+            reply.status(500).send({
               type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
               data: {
-                content: `Erreur lors de l'exécution de la commande ${interaction.data.name}.`,
+                content: `Erreur lors de l'exécution de la commande ${commandInteraction.data.name}.`,
               },
             });
-            res.status(500).send('Erreur interne du serveur');
           }
-          res.status(200).end();
         } else {
-          res.send({
+          reply.status(404).send({
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
             data: {
-              content: `Commande ${interaction.data.name} non reconnue.`,
+              content: `Commande ${commandInteraction.data.name} non reconnue.`,
             },
           });
         }
       }
     },
-  );
+  });
 
-  // Middleware pour parser le corps des requêtes en JSON
-  app.use(express.json());
+  // Middleware pour parser le corps des requêtes en JSON (Fastify le gère automatiquement)
+  // fastify.addContentTypeParser(
+  //   'application/json',
+  //   { parseAs: 'string' },
+  //   (req, body, done) => {
+  //     try {
+  //       done(null, JSON.parse(body));
+  //     } catch (error) {
+  //       done(error, undefined);
+  //     }
+  //   },
+  // );
 
-  app.listen(PORT, () => {
-    console.log(`Serveur HTTP démarré sur le port ${PORT}`);
+  fastify.listen({ port: Number(PORT), host: '0.0.0.0' }, (err, address) => {
+    if (err) {
+      console.error(err);
+      process.exit(1);
+    }
+    console.log(`Serveur HTTP démarré sur ${address}`);
   });
 }
 
