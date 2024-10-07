@@ -1,7 +1,7 @@
-import { join } from 'path';
-import { existsSync, readdirSync } from 'fs';
+import { existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
-import { type ClientEvents, type Awaitable, Events } from 'discord.js';
+import { type Awaitable, type ClientEvents, Events } from 'discord.js';
 
 const EVENTS_PATH = join(process.cwd(), global.dev ? 'src' : 'dist', 'events');
 
@@ -18,7 +18,7 @@ interface Event<T extends EventKeys = EventKeys> {
 
 function event<T extends EventKeys>(
   key: T,
-  callback: EventCallback<T>
+  callback: EventCallback<T>,
 ): Event<T> {
   return { key, callback };
 }
@@ -27,7 +27,7 @@ async function register() {
   if (!existsSync(EVENTS_PATH)) return;
 
   const files = readdirSync(EVENTS_PATH).filter(
-    (file) => file.endsWith('.ts') || file.endsWith('.js')
+    (file) => file.endsWith('.ts') || file.endsWith('.js'),
   );
 
   for (const fileName of files) {
@@ -44,16 +44,16 @@ async function register() {
         event.key,
         async (...args: ClientEvents[keyof ClientEvents]) => {
           await event.callback(...args);
-        }
+        },
       );
   }
 }
 
 export {
   event,
-  register,
   Events,
+  register,
   type Event,
+  type EventCallback,
   type EventKeys,
-  type EventCallback
 };

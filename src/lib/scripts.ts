@@ -1,17 +1,17 @@
-import { existsSync, readdirSync } from 'fs';
-import { join } from 'path';
+import { existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 const SCRIPTS_PATH = join(
   process.cwd(),
   global.dev ? 'src' : 'dist',
-  'scripts'
+  'scripts',
 );
 
 async function register() {
   if (!existsSync(SCRIPTS_PATH)) return;
 
   const files = readdirSync(SCRIPTS_PATH).filter(
-    (file) => file.endsWith('.ts') || file.endsWith('.js')
+    (file) => file.endsWith('.ts') || file.endsWith('.js'),
   );
 
   for (const fileName of files) {

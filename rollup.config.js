@@ -23,7 +23,7 @@ const inputs = getFiles('src')
     (file) =>
       typeof file === 'string' &&
       file.endsWith('.ts') &&
-      !file.endsWith('.d.ts')
+      !file.endsWith('.d.ts'),
   )
   .reduce((acc, file) => {
     const name = relative('src', file).replace('.ts', '');
@@ -38,7 +38,7 @@ export default {
     format: 'esm',
     preserveModules: true,
     preserveModulesRoot: 'src',
-    sourcemap: false
+    sourcemap: false,
   },
   plugins: [
     del({ targets: 'dist/*' }),
@@ -48,13 +48,13 @@ export default {
       sourceMap: false,
       tsconfig: './tsconfig.json',
       outputToFilesystem: true,
-      noEmitOnError: false
+      noEmitOnError: false,
     }),
     copy({
       targets: [
-        { src: 'src/config.json', dest: 'dist' } // Copie config.json vers dist
-      ]
-    })
+        { src: 'src/config.json', dest: 'dist' }, // Copie config.json vers dist
+      ],
+    }),
   ],
-  external: ['discord.js', 'dotenv', 'zod', 'node:*', /.*\.json$/]
+  external: ['discord.js', 'dotenv', 'zod', 'node:*', /.*\.json$/],
 };

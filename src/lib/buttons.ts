@@ -1,11 +1,11 @@
 import type { Awaitable, ButtonInteraction } from 'discord.js';
-import { existsSync, readdirSync } from 'fs';
-import { join } from 'path';
+import { existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 const BUTTONS_PATH = join(
   process.cwd(),
   global.dev ? 'src' : 'dist',
-  'buttons'
+  'buttons',
 );
 
 type ButtonCallback = (interaction: ButtonInteraction) => Awaitable<unknown>;
@@ -23,7 +23,7 @@ async function register() {
   if (!existsSync(BUTTONS_PATH)) return;
 
   const files = readdirSync(BUTTONS_PATH).filter(
-    (file) => file.endsWith('.ts') || file.endsWith('.js')
+    (file) => file.endsWith('.ts') || file.endsWith('.js'),
   );
 
   for (const fileName of files) {

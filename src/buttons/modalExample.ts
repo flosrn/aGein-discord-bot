@@ -21,6 +21,6 @@ export default callback('modal-example', async (interaction) => {
   const modalInteraction = await awaitModal('example-modal');
 
   await modalInteraction.reply(
-    `Modal submited: ${modalInteraction.fields.getTextInputValue('example-text-input')}`
+    `Modal submited: ${modalInteraction.fields.getTextInputValue('example-text-input')}`,
   );
 });

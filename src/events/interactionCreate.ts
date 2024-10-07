@@ -1,14 +1,14 @@
-import { event, Events } from '@/lib/events';
-import { Interaction } from 'discord.js';
+import { Events, event } from '@/lib/events';
+import type { Interaction } from 'discord.js';
 
 type InteractionHandler<T extends Interaction> = (
-  interaction: T
+  interaction: T,
 ) => Promise<void>;
 
 async function handleInteraction<T extends Interaction>(
   interaction: T,
   type: string,
-  collection: 'commands' | 'buttons' | 'modals' | 'selections'
+  collection: 'commands' | 'buttons' | 'modals' | 'selections',
 ): Promise<void> {
   const key =
     'customId' in interaction
@@ -27,7 +27,7 @@ async function handleInteraction<T extends Interaction>(
     if (typeof item === 'function') item(interaction as never);
     else if ('callback' in item && typeof item.callback === 'function')
       await (item.callback as (interaction: Interaction) => Promise<void>)(
-        interaction
+        interaction,
       );
     else throw new Error(`Invalid ${type} structure`);
   } catch (error) {
@@ -37,7 +37,7 @@ async function handleInteraction<T extends Interaction>(
       await interaction
         .reply({
           content: `An error occurred while executing this ${type}.`,
-          ephemeral: true
+          ephemeral: true,
         })
         .catch(console.error);
   }
@@ -55,7 +55,7 @@ const interactionHandlers: {
   ModalSubmitInteraction: (interaction) =>
     handleInteraction(interaction, 'modal', 'modals'),
   StringSelectMenuInteraction: (interaction) =>
-    handleInteraction(interaction, 'selection', 'selections')
+    handleInteraction(interaction, 'selection', 'selections'),
 };
 
 export default event(
@@ -69,7 +69,7 @@ export default event(
     if (handler) return await handler(interaction as never);
 
     console.warn(
-      `No interaction handler for type ${interaction.constructor.name} was found.`
+      `No interaction handler for type ${interaction.constructor.name} was found.`,
     );
-  }
+  },
 );

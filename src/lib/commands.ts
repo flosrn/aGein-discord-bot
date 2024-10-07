@@ -1,24 +1,24 @@
-import { existsSync, readdirSync } from 'fs';
-import { join } from 'path';
+import { existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 import {
-  REST,
-  Routes,
   type Awaitable,
   type ChatInputCommandInteraction,
+  REST,
   type RESTPostAPIChatInputApplicationCommandsJSONBody,
+  Routes,
   type SlashCommandBuilder,
-  type SlashCommandOptionsOnlyBuilder
+  type SlashCommandOptionsOnlyBuilder,
 } from 'discord.js';
 
 const COMMANDS_PATH = join(
   process.cwd(),
   global.dev ? 'src' : 'dist',
-  'commands'
+  'commands',
 );
 
 type CommandCallback = (
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction,
 ) => Awaitable<unknown>;
 
 interface Command {
@@ -28,7 +28,7 @@ interface Command {
 
 function command(
   data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder,
-  callback: CommandCallback
+  callback: CommandCallback,
 ): Command {
   return { data, callback };
 }
@@ -37,7 +37,7 @@ async function register() {
   if (!existsSync(COMMANDS_PATH)) return;
 
   const files = readdirSync(COMMANDS_PATH).filter(
-    (file) => file.endsWith('.ts') || file.endsWith('.js')
+    (file) => file.endsWith('.ts') || file.endsWith('.js'),
   );
 
   const deploys: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
@@ -58,8 +58,8 @@ async function register() {
   const rest = new REST({ version: '10' }).setToken(global.env.CLIENT_TOKEN);
 
   env.GUILD_IDS.forEach((id) => {
-    rest.put(Routes.applicationGuildCommands(global.env.CLIENT_ID!, id), {
-      body: deploys
+    rest.put(Routes.applicationGuildCommands(global.env.CLIENT_ID, id), {
+      body: deploys,
     });
   });
 }

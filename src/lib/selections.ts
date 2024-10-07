@@ -1,15 +1,15 @@
 import type { Awaitable, StringSelectMenuInteraction } from 'discord.js';
-import { existsSync, readdirSync } from 'fs';
-import { join } from 'path';
+import { existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 const SELECTIONS_PATH = join(
   process.cwd(),
   global.dev ? 'src' : 'dist',
-  'selections'
+  'selections',
 );
 
 type SelectionCallback = (
-  interaction: StringSelectMenuInteraction
+  interaction: StringSelectMenuInteraction,
 ) => Awaitable<unknown>;
 
 interface Selection {
@@ -25,7 +25,7 @@ async function register() {
   if (!existsSync(SELECTIONS_PATH)) return;
 
   const files = readdirSync(SELECTIONS_PATH).filter(
-    (file) => file.endsWith('.ts') || file.endsWith('.js')
+    (file) => file.endsWith('.ts') || file.endsWith('.js'),
   );
 
   for (const fileName of files) {
